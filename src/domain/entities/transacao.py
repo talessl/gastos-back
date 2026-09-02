@@ -8,5 +8,6 @@ class Transacao:
     tipo: str
     observacao: str
     data: str
+    usuario_id: int
     # O ID é opcional pois uma transação nova não tem ID até ser salva
     id: Optional[int] = None

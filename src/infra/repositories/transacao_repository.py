@@ -1,23 +1,24 @@
 import aiosqlite
 from typing import List
 
-# Importamos a nossa entidade pura e a variável de conexão
 from src.domain.entities.transacao import Transacao
-from src.infra.database.connection import DB_FILE
+from src.infra.config import DB_FILE
 
 
 class TransacaoRepository:
 
-    async def buscar_todas(self) -> List[Transacao]:
+    async def buscar_todas(self, usuario_id: int) -> List[Transacao]:
         async with aiosqlite.connect(DB_FILE) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute("SELECT * FROM transacoes") as cursor:
+            async with db.execute(
+                "SELECT * FROM transacoes WHERE usuario_id = ?", (usuario_id,)
+            ) as cursor:
                 rows = await cursor.fetchall()
 
-                # Traduzimos as linhas do banco (dicionários) para a nossa Entidade
                 return [
                     Transacao(
                         id=row["id"],
+                        usuario_id=row["usuario_id"],
                         valor=row["valor"],
                         tipo=row["tipo"],
                         observacao=row["observacao"],
@@ -28,18 +29,18 @@ class TransacaoRepository:
     async def salvar(self, transacao: Transacao) -> Transacao:
         async with aiosqlite.connect(DB_FILE) as db:
             cursor = await db.execute(
-                "INSERT INTO transacoes (valor, tipo, observacao, data) VALUES (?, ?, ?, ?)",
+                "INSERT INTO transacoes (valor, tipo, observacao, data, usuario_id) VALUES (?, ?, ?, ?, ?)",
                 (transacao.valor, transacao.tipo,
-                 transacao.observacao, transacao.data)
+                 transacao.observacao, transacao.data, transacao.usuario_id)
             )
             await db.commit()
 
-            # O banco gerou um ID, então atualizamos a entidade antes de devolvê-la
+            # O banco gerou um ID, atualizamos a entidade antes de devolvê-la
             transacao.id = cursor.lastrowid
             return transacao
 
-    async def limpar_todas(self) -> bool:
+    async def limpar_todas(self, usuario_id: int) -> bool:
         async with aiosqlite.connect(DB_FILE) as db:
-            await db.execute("DELETE FROM transacoes")
+            await db.execute("DELETE FROM transacoes WHERE usuario_id = ?", (usuario_id,))
             await db.commit()
             return True

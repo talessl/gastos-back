@@ -1,7 +1,6 @@
 # arquivo: src/domain/entities/analise_acao.py
 
 class AnaliseAcao:
-    # 1. Type hints: avisamos que ticker é str (texto) e os outros são float (números com vírgula)
     def __init__(self, ticker: str, preco_atual: float, rsi: float, estocastico_lento: float):
         # Garante que sempre fique maiúsculo (ex: petr4 vira PETR4)
         self.ticker = ticker.upper()

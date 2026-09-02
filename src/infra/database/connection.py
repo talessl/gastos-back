@@ -1,8 +1,5 @@
 import aiosqlite
-
-# O caminho do nosso banco de dados.
-# Se preferir, em projetos reais, pegamos isso de variáveis de ambiente (.env)
-DB_FILE = "./banco-dados.sqlite"
+from src.infra.config import DB_FILE
 
 
 async def init_db():
@@ -17,7 +14,8 @@ async def init_db():
                 valor REAL,
                 tipo TEXT,
                 observacao TEXT,
-                data TEXT
+                data TEXT,
+                usuario_id INTEGER NOT NULL
             )
         """)
         await db.commit()

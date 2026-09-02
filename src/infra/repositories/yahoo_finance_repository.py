@@ -4,7 +4,6 @@ from src.domain.interfaces.repository_interfaces import IAcaoRepository
 
 class YahooFinanceRepository(IAcaoRepository):
     def buscar_historico(self, ticker: str) -> dict:
-        # O Fundamentus devolve "MGLU3", mas o Yahoo exige "MGLU3.SA". Adicionamos o sufixo.
         ticker_yahoo = f"{ticker}.SA" if not ticker.endswith(".SA") else ticker
 
         acao = yf.Ticker(ticker_yahoo)

@@ -1,33 +1,40 @@
 import strawberry
 from typing import List
+from strawberry.types import Info
 
-# Importamos o Tipo do GraphQL (O formato que vai para a internet)
 from src.api.graphql.types import TransacaoType, OportunidadeType, IndicadoresType
 
-# Importamos a Entidade pura e o Repositório (O motor do banco)
-from src.domain.entities.transacao import Transacao
 from src.infra.repositories.transacao_repository import TransacaoRepository
+from src.domain.usecases.gerenciar_transacao_usecase import GerenciarTransacoesUseCase
 
 from src.infra.repositories.yahoo_finance_repository import YahooFinanceRepository
 from src.infra.repositories.brapi_repository import BrapiRepository
 from src.domain.usecases.analisar_acoes_usecase import AnalisarOportunidadesUseCase
 
-# Instanciamos o nosso repositório
-repository = TransacaoRepository()
+transacao_repo = TransacaoRepository()
+gerenciar_transacoes_uc = GerenciarTransacoesUseCase(transacao_repo)
+
 explorador_repo = BrapiRepository()
 acao_repo = YahooFinanceRepository()
 analisar_oportunidades_uc = AnalisarOportunidadesUseCase(
     explorador_repo, acao_repo)
 
 
+def _extrair_usuario_id(info: Info) -> int:
+    usuario_id = info.context.get("usuario_id")
+    if not usuario_id:
+        raise Exception("Acesso Negado: Usuário não autenticado.")
+    return usuario_id
+
+
 @strawberry.type
 class Query:
     @strawberry.field
-    async def buscar_transacoes(self) -> List[TransacaoType]:
-        # 1. Pede os dados puros (Entidades) para o Repositório
-        transacoes_db = await repository.buscar_todas()
+    async def buscar_transacoes(self, info: Info) -> List[TransacaoType]:
+        usuario_id = _extrair_usuario_id(info)
 
-        # 2. Traduz a Entidade do Domínio para o Tipo do GraphQL
+        transacoes_db = await gerenciar_transacoes_uc.listar_transacoes(usuario_id)
+
         return [
             TransacaoType(
                 id=t.id,
@@ -63,15 +70,12 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def adicionar_transacao(self, valor: float, tipo: str, observacao: str, data: str) -> TransacaoType:
-        # 1. Cria a Entidade pura do Domínio com os dados do Front-end
-        nova_transacao = Transacao(
-            valor=valor, tipo=tipo, observacao=observacao, data=data)
+    async def adicionar_transacao(self, info: Info, valor: float, tipo: str, observacao: str, data: str) -> TransacaoType:
+        usuario_id = _extrair_usuario_id(info)
 
-        # 2. Manda o Repositório salvar e pegar o ID gerado
-        transacao_salva = await repository.salvar(nova_transacao)
+        transacao_salva = await gerenciar_transacoes_uc.criar_transacao(
+            usuario_id=usuario_id, valor=valor, tipo=tipo, observacao=observacao, data=data)
 
-        # 3. Devolve para o Front-end no formato GraphQL
         return TransacaoType(
             id=transacao_salva.id,
             valor=transacao_salva.valor,
@@ -81,9 +85,9 @@ class Mutation:
         )
 
     @strawberry.mutation
-    async def limpar_transacoes(self) -> bool:
-        return await repository.limpar_todas()
+    async def limpar_transacoes(self, info: Info) -> bool:
+        usuario_id = _extrair_usuario_id(info)
+        return await gerenciar_transacoes_uc.limpar_transacoes(usuario_id)
 
 
-# Exportamos o esquema pronto para ser plugado no FastAPI
 schema = strawberry.Schema(query=Query, mutation=Mutation)

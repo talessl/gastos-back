@@ -22,6 +22,4 @@ class BrapiRepository(IExploradorMercadoRepository):
                 if not ticker.endswith('F'):
                     tickers_filtrados.append(f"{ticker}.SA")
 
-        # Se quiser limitar ainda mais para não sobrecarregar o Yahoo,
-        # você pode retornar apenas os primeiros 20 ou 30: return tickers_filtrados[:30]
         return tickers_filtrados
