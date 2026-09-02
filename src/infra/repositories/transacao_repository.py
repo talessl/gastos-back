@@ -7,18 +7,17 @@ from src.infra.config import DB_FILE
 
 class TransacaoRepository:
 
-    async def buscar_todas(self, usuario_id: int) -> List[Transacao]:
+    async def buscar_todas(self) -> List[Transacao]:
         async with aiosqlite.connect(DB_FILE) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
-                "SELECT * FROM transacoes WHERE usuario_id = ?", (usuario_id,)
+                "SELECT * FROM transacoes"
             ) as cursor:
                 rows = await cursor.fetchall()
 
                 return [
                     Transacao(
                         id=row["id"],
-                        usuario_id=row["usuario_id"],
                         valor=row["valor"],
                         tipo=row["tipo"],
                         observacao=row["observacao"],
@@ -29,9 +28,9 @@ class TransacaoRepository:
     async def salvar(self, transacao: Transacao) -> Transacao:
         async with aiosqlite.connect(DB_FILE) as db:
             cursor = await db.execute(
-                "INSERT INTO transacoes (valor, tipo, observacao, data, usuario_id) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO transacoes (valor, tipo, observacao, data) VALUES (?, ?, ?, ?)",
                 (transacao.valor, transacao.tipo,
-                 transacao.observacao, transacao.data, transacao.usuario_id)
+                 transacao.observacao, transacao.data)
             )
             await db.commit()
 
@@ -39,8 +38,8 @@ class TransacaoRepository:
             transacao.id = cursor.lastrowid
             return transacao
 
-    async def limpar_todas(self, usuario_id: int) -> bool:
+    async def limpar_todas(self) -> bool:
         async with aiosqlite.connect(DB_FILE) as db:
-            await db.execute("DELETE FROM transacoes WHERE usuario_id = ?", (usuario_id,))
+            await db.execute("DELETE FROM transacoes ")
             await db.commit()
             return True

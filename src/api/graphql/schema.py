@@ -20,20 +20,12 @@ analisar_oportunidades_uc = AnalisarOportunidadesUseCase(
     explorador_repo, acao_repo)
 
 
-def _extrair_usuario_id(info: Info) -> int:
-    usuario_id = info.context.get("usuario_id")
-    if not usuario_id:
-        raise Exception("Acesso Negado: Usuário não autenticado.")
-    return usuario_id
-
-
 @strawberry.type
 class Query:
     @strawberry.field
     async def buscar_transacoes(self, info: Info) -> List[TransacaoType]:
-        usuario_id = _extrair_usuario_id(info)
 
-        transacoes_db = await gerenciar_transacoes_uc.listar_transacoes(usuario_id)
+        transacoes_db = await gerenciar_transacoes_uc.listar_transacoes()
 
         return [
             TransacaoType(
@@ -71,10 +63,8 @@ class Query:
 class Mutation:
     @strawberry.mutation
     async def adicionar_transacao(self, info: Info, valor: float, tipo: str, observacao: str, data: str) -> TransacaoType:
-        usuario_id = _extrair_usuario_id(info)
 
-        transacao_salva = await gerenciar_transacoes_uc.criar_transacao(
-            usuario_id=usuario_id, valor=valor, tipo=tipo, observacao=observacao, data=data)
+        transacao_salva = await gerenciar_transacoes_uc.criar_transacao(valor=valor, tipo=tipo, observacao=observacao, data=data)
 
         return TransacaoType(
             id=transacao_salva.id,
@@ -86,8 +76,7 @@ class Mutation:
 
     @strawberry.mutation
     async def limpar_transacoes(self, info: Info) -> bool:
-        usuario_id = _extrair_usuario_id(info)
-        return await gerenciar_transacoes_uc.limpar_transacoes(usuario_id)
+        return await gerenciar_transacoes_uc.limpar_transacoes()
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

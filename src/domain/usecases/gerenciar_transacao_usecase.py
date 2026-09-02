@@ -9,14 +9,14 @@ class GerenciarTransacoesUseCase:
     def __init__(self, transacao_repo: ITransacaoRepository):
         self.transacao_repo = transacao_repo
 
-    async def listar_transacoes(self, usuario_id: int) -> List[Transacao]:
-        return await self.transacao_repo.buscar_todas(usuario_id)
+    async def listar_transacoes(self) -> List[Transacao]:
+        return await self.transacao_repo.buscar_todas()
 
-    async def criar_transacao(self, usuario_id: int, valor: float, tipo: str, observacao: str, data: str) -> Transacao:
+    async def criar_transacao(self, valor: float, tipo: str, observacao: str, data: str) -> Transacao:
         self._validar(valor, tipo)
 
         nova_transacao = Transacao(
-            valor=valor, tipo=tipo, observacao=observacao, data=data, usuario_id=usuario_id)
+            valor=valor, tipo=tipo, observacao=observacao, data=data)
 
         return await self.transacao_repo.salvar(nova_transacao)
 

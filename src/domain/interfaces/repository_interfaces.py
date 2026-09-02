@@ -17,7 +17,7 @@ class IAcaoRepository(ABC):
 
 class ITransacaoRepository(ABC):
     @abstractmethod
-    async def buscar_todas(self, usuario_id: int) -> List[Transacao]:
+    async def buscar_todas(self) -> List[Transacao]:
         pass
 
     @abstractmethod
