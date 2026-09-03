@@ -1,7 +1,7 @@
 # 📊 Gastos API (Back-end)
 
 ## ⚠️ Branch
-Troque para a branch `feature/sem-autenticacao`.
+Troque para a branch `feature/back-sem-autenticacao`.
 
 ## 🚀 Opções para rodar
 
