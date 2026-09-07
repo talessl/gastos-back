@@ -7,7 +7,7 @@ class YahooFinanceRepository(IAcaoRepository):
         ticker_yahoo = f"{ticker}.SA" if not ticker.endswith(".SA") else ticker
 
         acao = yf.Ticker(ticker_yahoo)
-        historico = acao.history(period="60d")
+        historico = acao.history(period="3mo")
 
         if historico.empty:
             raise ValueError(f"Nenhum dado encontrado para {ticker_yahoo}")
