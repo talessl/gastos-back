@@ -20,6 +20,28 @@ analisar_oportunidades_uc = AnalisarOportunidadesUseCase(
     explorador_repo, acao_repo)
 
 
+@strawberry.field
+def buscar_oportunidades(self, preco_maximo: float = 10.0) -> List[OportunidadeType]:
+    resultados = analisar_oportunidades_uc.executar(preco_maximo)
+
+    lista_oportunidades = []
+    for res in resultados:
+        indicadores = IndicadoresType(
+            rsi=res["indicadores"]["rsi"],
+            estocastico=res["indicadores"]["estocastico"]
+        )
+        lista_oportunidades.append(
+            OportunidadeType(
+                ativo=res["ativo"],
+                preco=res["preco"],
+                status=res["status"],
+                indicadores=indicadores
+            )
+        )
+
+    return lista_oportunidades
+
+
 @strawberry.type
 class Query:
     @strawberry.field
@@ -36,27 +58,6 @@ class Query:
                 data=t.data
             ) for t in transacoes_db
         ]
-
-    @strawberry.field
-    def buscar_oportunidades(self, preco_maximo: float = 10.0) -> List[OportunidadeType]:
-        resultados = analisar_oportunidades_uc.executar(preco_maximo)
-
-        lista_oportunidades = []
-        for res in resultados:
-            indicadores = IndicadoresType(
-                rsi=res["indicadores"]["rsi"],
-                estocastico=res["indicadores"]["estocastico"]
-            )
-            lista_oportunidades.append(
-                OportunidadeType(
-                    ativo=res["ativo"],
-                    preco=res["preco"],
-                    status=res["status"],
-                    indicadores=indicadores
-                )
-            )
-
-        return lista_oportunidades
 
 
 @strawberry.type
