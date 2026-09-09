@@ -38,6 +38,13 @@ class TransacaoRepository:
             transacao.id = cursor.lastrowid
             return transacao
 
+    async def deletar_por_id(self, transacao_id: int) -> bool:
+        async with aiosqlite.connect(DB_FILE) as db:
+            cursor = await db.execute("DELETE FROM transacoes WHERE id = ?", (transacao_id,))
+            await db.commit()
+
+            return cursor.rowcount > 0
+
     async def limpar_todas(self) -> bool:
         async with aiosqlite.connect(DB_FILE) as db:
             await db.execute("DELETE FROM transacoes ")
