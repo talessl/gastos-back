@@ -2,7 +2,7 @@ import strawberry
 from typing import List
 from strawberry.types import Info
 
-from src.api.graphql.types import TransacaoType, OportunidadeType, IndicadoresType
+from src.api.graphql.types import TransacaoType, OportunidadeType, IndicadoresType, AcaoBuscadaType
 
 from src.infra.repositories.transacao_repository import TransacaoRepository
 from src.domain.entities.transacao import Transacao
@@ -43,6 +43,20 @@ class Query:
         return lista_oportunidades
 
     @strawberry.field
+    def buscar_acao(self, ticker: str) -> AcaoBuscadaType:
+        # Como é uma leitura simples, instanciamos o repositório direto
+        repo = YahooFinanceRepository()
+
+        try:
+            dados = repo.buscar_historico(ticker)
+            return AcaoBuscadaType(
+                ticker=dados["ticker"],
+                preco_atual=dados["preco_atual"]
+            )
+        except Exception as e:
+            raise ValueError(f"Ação não encontrada ou erro na busca: {str(e)}")
+
+    @strawberry.field
     async def buscar_transacoes(self, info: Info) -> List[TransacaoType]:
 
         transacoes_db = await transacao_repo.buscar_todas()
@@ -73,6 +87,21 @@ class Mutation:
             tipo=transacao_salva.tipo,
             observacao=transacao_salva.observacao,
             data=transacao_salva.data
+        )
+
+    @strawberry.mutation
+    async def atualizar_transacao(self, info: Info, id: int, valor: float, tipo: str, observacao: str, data: str) -> TransacaoType:
+
+        transacao_atualizada = await transacao_repo.atualizar(Transacao(
+            id=id, valor=valor, tipo=tipo, observacao=observacao, data=data
+        ))
+
+        return TransacaoType(
+            id=transacao_atualizada.id,
+            valor=transacao_atualizada.valor,
+            tipo=transacao_atualizada.tipo,
+            observacao=transacao_atualizada.observacao,
+            data=transacao_atualizada.data
         )
 
     @strawberry.mutation

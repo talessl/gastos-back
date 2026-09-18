@@ -38,6 +38,24 @@ class TransacaoRepository:
             transacao.id = cursor.lastrowid
             return transacao
 
+    async def atualizar(self, transacao: Transacao) -> Transacao:
+        if transacao.id is None:
+            raise ValueError("Não é possível atualizar uma transação sem ID.")
+
+        async with aiosqlite.connect(DB_FILE) as db:
+            cursor = await db.execute(
+                "UPDATE transacoes SET valor = ?, tipo = ?, observacao = ?, data = ? WHERE id = ?",
+                (transacao.valor, transacao.tipo,
+                 transacao.observacao, transacao.data, transacao.id)
+            )
+            await db.commit()
+
+            if cursor.rowcount == 0:
+                raise ValueError(
+                    f"Transação com id={transacao.id} não encontrada.")
+
+            return transacao
+
     async def deletar_por_id(self, transacao_id: int) -> bool:
         async with aiosqlite.connect(DB_FILE) as db:
             cursor = await db.execute("DELETE FROM transacoes WHERE id = ?", (transacao_id,))

@@ -12,6 +12,17 @@ class TransacaoType:
 
 
 @strawberry.type
+class ErroType:
+    mensagem: str
+
+
+@strawberry.type
+class AcaoBuscadaType:
+    ticker: str
+    preco_atual: float
+
+
+@strawberry.type
 class IndicadoresType:
     rsi: float
     estocastico: float
