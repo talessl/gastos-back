@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
-from src.api.graphql.context import get_context
 import uvicorn
 
 from src.infra.database.connection import init_db
@@ -28,7 +27,7 @@ app.add_middleware(
 )
 
 
-graphql_app = GraphQLRouter(schema, context_getter=get_context)
+graphql_app = GraphQLRouter(schema)
 app.include_router(graphql_app, prefix="/graphql")
 
 if __name__ == "__main__":

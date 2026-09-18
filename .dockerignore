@@ -1,0 +1,22 @@
+# Ambientes virtuais
+venv/
+env/
+.venv/
+
+# Arquivos compilados do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Bancos de dados locais (para não misturar com o container)
+*.sqlite
+*.db
+
+# Variáveis de ambiente
+.env
+
+# Controle de versão e IDEs
+.git/
+.vscode/
+.idea/

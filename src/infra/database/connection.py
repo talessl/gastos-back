@@ -14,8 +14,7 @@ async def init_db():
                 valor REAL,
                 tipo TEXT,
                 observacao TEXT,
-                data TEXT,
-                usuario_id INTEGER NOT NULL
+                data TEXT
             )
         """)
         await db.commit()
