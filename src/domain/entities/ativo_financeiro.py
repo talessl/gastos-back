@@ -1,4 +1,6 @@
 # arquivo: src/domain/entities/analise_acao.py
+import math
+
 
 class AnaliseAcao:
     def __init__(self, ticker: str, preco_atual: float, rsi: float, estocastico_lento: float):
@@ -14,17 +16,21 @@ class AnaliseAcao:
     def validar(self):
         if not self.ticker:
             raise ValueError("O Ticker da ação é obrigatório.")
-        if self.rsi < 0 or self.rsi > 100:
+
+        # None e NaN primeiro, antes de qualquer comparação
+        for nome, valor in (("RSI", self.rsi), ("Estocástico", self.estocastico_lento)):
+            if valor is None or math.isnan(valor):
+                raise ValueError(
+                    f"Dados insuficientes no Yahoo Finance para {self.ticker} ({nome})")
+
+        if not 0 <= self.rsi <= 100:
             raise ValueError(
                 f"O IFR (RSI) deve estar entre 0 e 100. Valor recebido: {self.rsi}")
-        if self.rsi is None or self.estocastico_lento is None:
-            raise ValueError(
-                f"Dados insuficientes no Yahoo Finance para o ticker {self.ticker}")
-        if self.estocastico_lento < 0 or self.estocastico_lento > 100:
+        if not 0 <= self.estocastico_lento <= 100:
             raise ValueError(
                 f"O Estocástico Lento deve estar entre 0 e 100. Valor recebido: {self.estocastico_lento}")
-
     # A nossa Regra de Negócio Pura!
+
     def is_oportunidade_de_compra(self) -> bool:
         # A regra de ouro: RSI abaixo de 30 e Estocástico abaixo de 20
         is_rsi_sobrevendido = self.rsi < 30

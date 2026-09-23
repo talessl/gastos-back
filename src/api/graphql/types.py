@@ -20,6 +20,10 @@ class ErroType:
 class AcaoBuscadaType:
     ticker: str
     preco_atual: float
+    datas: list[str]
+    high: list[float]
+    low: list[float]
+    close: list[float]
 
 
 @strawberry.type

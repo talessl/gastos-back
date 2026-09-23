@@ -51,7 +51,11 @@ class Query:
             dados = repo.buscar_historico(ticker)
             return AcaoBuscadaType(
                 ticker=dados["ticker"],
-                preco_atual=dados["preco_atual"]
+                preco_atual=dados["preco_atual"],
+                datas=dados["datas"],
+                high=dados["high"],
+                low=dados["low"],
+                close=dados["close"],
             )
         except Exception as e:
             raise ValueError(f"Ação não encontrada ou erro na busca: {str(e)}")

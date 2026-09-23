@@ -22,14 +22,24 @@ class AnalisarOportunidadesUseCase:
             try:
                 dados = self.acao_repo.buscar_historico(ticker)
 
+                volume_medio = sum(dados['volume'][-20:]) / \
+                    max(len(dados['volume'][-20:]), 1)
+                if volume_medio < 100_000:  # ajuste conforme seu critério
+                    continue
+
                 rsi = self._calcular_rsi(dados['close'])
                 estocastico = self._calcular_estocastico(
                     dados['high'], dados['low'], dados['close'])
+
+                if estocastico is not None and estocastico <= 1:
+                    print(ticker, estocastico,
+                          "H:", dados['high'][-5:], "L:", dados['low'][-5:], "C:", dados['close'][-5:])
+
                 analise = AnaliseAcao(
                     ticker=ticker,
                     preco_atual=dados['preco_atual'],
                     rsi=rsi,
-                    estocastico_lento=estocastico
+                    estocastico_lento=estocastico,
                 )
 
                 if analise.is_oportunidade_de_compra():
@@ -51,11 +61,14 @@ class AnalisarOportunidadesUseCase:
     def _calcular_estocastico(self, high: list, low: list, close: list) -> float:
         df = pd.DataFrame({'high': high, 'low': low, 'close': close})
 
-        # k=14 (período), d=3 (média), smooth_k=3 (suavização para o Estocástico Lento)
+        # Se a faixa (máx - mín) foi zero em algum dos últimos 3 cálculos, o valor não é confiável
+        faixa = df['high'].rolling(14).max() - df['low'].rolling(14).min()
+        if len(df) < 16 or (faixa.tail(3) == 0).any():
+            return None
+
         stoch_calculado = ta.stoch(
             df['high'], df['low'], df['close'], k=14, d=3, smooth_k=3)
 
         if stoch_calculado is not None:
-            # A coluna STOCHk_14_3_3 representa a linha K do Estocástico Lento
             return float(stoch_calculado['STOCHk_14_3_3'].iloc[-1])
         return None

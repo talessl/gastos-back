@@ -14,8 +14,10 @@ class YahooFinanceRepository(IAcaoRepository):
 
         return {
             "ticker": ticker,
-            "preco_atual": float(historico['Close'].iloc[-1]),
-            "high": historico['High'].tolist(),
-            "low": historico['Low'].tolist(),
-            "close": historico['Close'].tolist()
+            "preco_atual": float(historico["Close"].iloc[-1]),
+            "datas": [d.strftime("%Y-%m-%d") for d in historico.index],
+            "high": historico["High"].tolist(),
+            "low": historico["Low"].tolist(),
+            "close": historico["Close"].tolist(),
+            "volume": historico["Volume"]
         }
